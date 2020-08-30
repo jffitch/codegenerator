@@ -1,5 +1,5 @@
 function constraintsDisplay() {
-    displayArea().innerHTML = "View List<br/>enter as \"viewId, viewType, viewWidth, viewHeight, constraintTop, constraintBottom, constraintLeft, constraintRight\"<br/><br/>viewType can use these hotkeys: tv TextView, iv ImageView, ivc ImageView (centerCrop), et EditText, bu Button, sp Spinner, cb CheckBox, rg RadioGroup, wv WebView, rv RecyclerView, sw Switch, mv GoogleMaps MapView, in include, ll LinearLayout, llv LinearLayout (vertical), llh LinearLayout (horizontal), rl RelativeLayout, cl ConstraintLayout<br/><br/>you may add b, i, bi, or ib to the end of tv, bu, or et to indicate bold or italic, and a number to indicate font size (for example, \"tvb30\" would be a bold TextView with 30 font size, and \"bubi8\" would be a bold italic Button with 8 font size)<br/><br/>viewWidth and viewHeight can be a number, w or c for wrap_content, m or p for match_parent, f for all remaining space<br/>can be entered without comma separator if both are m, p, w, c, or f (for example: mm, mw, cp, mf, fw, ...)<br/><br/>leave a constraint blank(using the comma separator but nothing between the commas) for unused constraints<br/>constraints can be either p for parent or a number corresponding to the row on this list (with 0 being the first row)<br/constraints to another view are on the outside by default, use an asterisk if you wish to constrain to the inside of a view (for example, 1*)<br/>top and bottom constraints can be combined using these hotkeys: c parent center, t parent top only, b parent bottom only, s chain start, m chain middle, e chain end<br/>left and right constraints can be combined using these hotkeys: c parent center, l parent left only, r parent right only, s chain start, m chain middle, e chain end<br/>chain start constrains to parent and next item on list, chain middle constrains to previous and next items on list, chain end constrains to previous item on list and parent<br/>all four constraints can also be combined with just c for vertical and horizontal center<br/>add \"m\" and a number to add a margin (\"pm20\" will constrain to parent with 20 margin)"
+    displayArea().innerHTML = "View List<br/>enter as \"viewId, viewType, viewWidth, viewHeight, constraintTop, constraintBottom, constraintLeft, constraintRight\"<br/><br/>viewType can use these hotkeys: tv TextView, iv ImageView, ivc ImageView (centerCrop), et EditText, bu Button, sp Spinner, cb CheckBox, rg RadioGroup, wv WebView, rv RecyclerView, sw Switch, mv GoogleMaps MapView, in include, ll LinearLayout, llv LinearLayout (vertical), llh LinearLayout (horizontal), rl RelativeLayout, cl ConstraintLayout<br/><br/>you may add b, i, bi, or ib to the end of tv, bu, or et to indicate bold or italic, and a number to indicate font size (for example, \"tvb30\" would be a bold TextView with 30 font size, and \"bubi8\" would be a bold italic Button with 8 font size)<br/><br/>viewWidth and viewHeight can be a number, w or c for wrap_content, m or p for match_parent, f for all remaining space<br/>can be entered without comma separator if both are m, p, w, c, or f (for example: mm, mw, cp, mf, fw, ...)<br/><br/>leave a constraint blank(using the comma separator but nothing between the commas) for unused constraints<br/>constraints can be either p for parent or a number corresponding to the row on this list (with 0 being the first row)<br/>constraints to another view are on the outside by default, use an asterisk if you wish to constrain to the inside of a view (for example, 1*)<br/>constraints can also be a number relative to itself using \"x+\" or \"x-\" (for example, in line 4, \"x+2\" could be used to refer to line 6, and \"x-1\" could be used to refer to line 3)<br/>top and bottom constraints can be combined using these hotkeys: c parent center, t parent top only, b parent bottom only, s chain start, m chain middle, e chain end<br/>left and right constraints can be combined using these hotkeys: c parent center, l parent left only, r parent right only, s chain start, m chain middle, e chain end<br/>chain start constrains to parent and next item on list, chain middle constrains to previous and next items on list, chain end constrains to previous item on list and parent<br/>all four constraints can also be combined with just c for vertical and horizontal center<br/>add \"m\" and a number to add a margin (\"pm20\" will constrain to parent with 20 margin)"
     + textArea(10, "viewList")
     + generateButton("constraintsCode")
     + textArea(20, "output");
@@ -43,8 +43,8 @@ function constraintsCode() {
             }
         }
     }
-    viewList = viewList.map(v => v.setLength(8));
-    for (let i of viewList) {
+    viewList = viewList.map(v => v.setLength(8, ""));
+    for (const [n, i] of viewList.entries()) {
         for (let j of [4, 5, 6, 7]) {
             if (/.m\d+/.test(i[j])) {
                 i.push(i[j].match(/(?<=m)\d+/)[0]);
@@ -52,6 +52,8 @@ function constraintsCode() {
             } else {
                 i.push("");
             }
+            i[j] = i[j].replace(/x\+(\d+)/, (_, a) => (n + parseInt(a)).toString());
+            i[j] = i[j].replace(/x-(\d+)/, (_, a) => (n - parseInt(a)).toString());
         }
         i[2] = mpwcfHotKey(i[2], "Horizontal");
         i[3] = mpwcfHotKey(i[3], "Vertical");
@@ -122,7 +124,7 @@ function constraintsCode() {
 `;
     for(let i of viewList) {
         code += `
-    <${viewHotKey(i[1])}
+    <${viewHotKey(i[1], i[0])}
         android:id="@+id/${i[0]}"
         android:layout_width="${i[2]}"
         android:layout_height="${i[3]}"${i[4]}${i[5]}${i[6]}${i[7]}${i[8]}${i[9]}${i[10]}${i[11]}${viewEndHotKey(i[1])}
@@ -158,13 +160,20 @@ function textStyleHotKey(str) {
         default: return str;
     }
 }
-function viewHotKey(str) {
+function textFromId(id, type) {
+    switch (type) {
+        case "tv": return id.replace("Label", "").toText();
+        case "bu": return id.replace("Button", "").toText();
+        default: return "";
+    }
+}
+function viewHotKey(str, id) {
     if (/^(tv|et|bu)(b|i|bi|ib|)\d*$/.test(str)) {
         let type = str.substring(0, 2);
         let style = str.substring(2).replace(/\d/g, "");
         let size = str.replace(/\D/g, "");
         return `${viewTypeHotKey(type)}
-        android:text=""${style === "" ? "" : `
+        android:text="${textFromId(id, type)}"${style === "" ? "" : `
         android:textStyle="${textStyleHotKey(style)}"`}${size === "" ? "" : `
         android:textSize="${size}sp"`}`;
     }

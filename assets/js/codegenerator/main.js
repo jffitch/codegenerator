@@ -4,7 +4,7 @@ function generatorLoadFunction() {
 
 // add tasks to list
 function setUpSelectBoxes() {
-    let tasks = ["Nav Graph", "Navigate With Bundle", "Checklist", "Room Database", "Instructions Page", "Layout Constraints", "Shared Preferences", "String Translation", "Parse Strings File", "Convert To @string", "Convert To @style", "Game Maker IAP", "API Call", "Radio Group", "RecyclerView Adapter", "Spinner Adapter", "findViewById", "Firebase", "Custom Tab Layout", "Constants File", "Repeated Layout", "Test Utility", "Unit Test"];
+    let tasks = ["Nav Graph", "Navigate With Bundle", "Checklist", "Room Database", "Instructions Page", "Layout Constraints", "Shared Preferences", "String Translation", "Parse Strings File", "Convert To @string", "Convert To @style", "Game Maker IAP", "API Call", "Radio Group", "RecyclerView Adapter", "Spinner Adapter", "findViewById", "Firebase", "Custom Tab Layout", "Constants File", "Repeated Layout", "ViewModel Test Utility", "Unit Test", "Test Resources", "Hardcoded Strings", "HTML Lists", "HTML Tables", "HTML Forms"];
     tasks.sort();
     tasks.unshift("select");
     for (let i of tasks) {
@@ -38,10 +38,14 @@ function taskChanged() {
         case "Custom Tab Layout": tabLayoutDisplay(); break;
         case "Constants File": constantsDisplay(); break;
         case "Repeated Layout": repeatedLayoutDisplay(); break;
-        case "Test Utility": testUtilityDisplay(); break;
+        case "ViewModel Test Utility": testUtilityDisplay(); break;
         case "Unit Test": unitTestDisplay(); break;
-        case "***": parkerSquareDisplay(); break;
-    }
+        case "Test Resources": testResourcesDisplay(); break;
+        case "Hardcoded Strings": hardcodedStringsDisplay(); break;
+        case "HTML Lists": htmlListsDisplay(); break;
+        case "HTML Tables": htmlTablesDisplay(); break;
+        case "HTML Forms": htmlFormsDisplay(); break;
+        case "***": parkerSquareDisplay(); break;    }
 }
 
 // generate textarea with custom number of rows
@@ -122,6 +126,26 @@ Array.prototype.setLength = function(l, char) {
     }
     if (this.length > l) {
         return this.slice(0, l);
+    }
+    if (this.length < l) {
+        return this.concat(new Array(l - this.length).fill(char));
+    }
+};
+
+// set the length of an array by removing extra entries
+Array.prototype.setMaxLength = function(l, char) {
+    if (this.length <= l) {
+        return this;
+    }
+    if (this.length > l) {
+        return this.slice(0, l);
+    }
+};
+
+// set the length of an array by adding empty strings
+Array.prototype.setMinLength = function(l, char) {
+    if (this.length >= l) {
+        return this;
     }
     if (this.length < l) {
         return this.concat(new Array(l - this.length).fill(char));
@@ -210,6 +234,17 @@ String.prototype.toStringResource = function(change) {
     return `@string/${this.toUnderscore()}`
 }
 
+// add character at string locations
+String.prototype.addBreaks = function(arr, char) {
+    let str = this;
+    arr.sort((a, b) => b - a)
+    arr = arr.filter(v => v <= str.length);
+    while (arr != 0) {
+        str = str.substring(0, arr[0]) + char + str.substring(arr.shift());
+    }
+    return str;
+}
+
 // show color resource in layout
 function colorResource(str) {
     if (str === "") {
@@ -234,7 +269,7 @@ function getValue(id) {
 // shorthand for document.getElementById(id).value.split("\n")
 // used for getting rows from a textarea
 function getRows(id) {
-    return getValue(id).split("\n").filter(v => v.trim() !== "");
+    return getValue(id).split("\n").trim().filter(v => v !== "");
 }
 
 // shorthand for document.getElementById("generator_display_area")

@@ -5,7 +5,7 @@ function adapterDisplay() {
     + textArea(1, "itemType")
     + "Child View Layout ID"
     + textArea(1, "layout")
-    + "View List<br/>each view on different line<br/>for views other than TextView and ImageView, just type the view's ID<br/>for TextView or ImageView, type \"viewId t\" or \"viewId i\" respectively<br/>you may instead paste your XML layout code"
+    + "View List<br/>each view on different line<br/>for views other than TextView, ImageView, CheckBox, and Switch, just type the view's ID<br/>for TextView type \"viewId t\", ImageView \"viewId i\", CheckBox or Switch \"viewId c\"<br/>you may instead paste your XML layout code"
     + textArea(5, "viewList")
     + generateButton("adapterCode")
     + "<br/>This code provides a general outline. You will most likely have to edit the code to get it to do exactly what you want."
@@ -22,7 +22,7 @@ function adapterCode() {
         let viewTags = getValue("viewList").split(/(?<=\>) *\n/).trim();
         for (let i of viewTags) {
             if (i.includes("android:id=\"@+id/")) {
-                viewList.push([i.match(/(?<=android:id="\@\+id\/)[^"]*/)[0], i.startsWith("<TextView") ? "t" : i.startsWith("<ImageView") ? "i" : ""]);
+                viewList.push([i.match(/(?<=android:id="\@\+id\/)[^"]*/)[0], i.startsWith("<TextView") ? "t" : i.startsWith("<ImageView") ? "i" : i.startsWith("<CheckBox") || i.startsWith("<Switch") ? "c" : ""]);
             }
         }
     } else {
@@ -40,19 +40,27 @@ function adapterCode() {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val i = items[position]`;
-    for (let i of viewList.filter(v => v.length == 2 && ["i", "t"].includes(v[1]))) {
-        if (i[1] == "t") {
-            code += `
-        // change "i.${i[0].toCamel()}" to desired text
+    for (let i of viewList.filter(v => v.length == 2 && ["i", "t", "c"].includes(v[1]))) {
+        switch (i[1]) {
+            case "t": {
+                code += `
         holder.${i[0].toCamel()}.text = i.${i[0].toCamel()}`;
-        } else {
-            code += `
-        // change "i.${i[0].toCamel()}" to desired image url
+                break;
+            }
+            case "i": {
+                code += `
         Glide.with(context).load(i.${i[0].toCamel()}).into(holder.${i[0].toCamel()})
         holder.${i[0].toCamel()}.visibility = if (true) View.VISIBLE else View.GONE`;
+                break;
+            }
+            case "c": {
+                code += `
+        holder.${i[0].toCamel()}.isChecked = true`;
+                break;
+            }
         }
     }
-    for (let i of viewList.filter(v => v.length == 1 || !["i", "t"].includes(v[1]))) {
+    for (let i of viewList.filter(v => v.length == 1 || !["i", "t", "c"].includes(v[1]))) {
         code += `
         holder.${i[0].toCamel()}.visibility = if (true) View.VISIBLE else View.GONE`;
     }

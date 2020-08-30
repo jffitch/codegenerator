@@ -25,12 +25,16 @@ function roomDatabaseDisplay() {
     + "DAO Class Code"
     + textArea(20, "daoClassCode")
     + "Table Class Code"
+    + textArea(20, "tableClassCode")
+    + "Write To Database"
+    + textArea(20, "writeCode")
+    + "Read From Database"
     + textArea(20, "tableClassCode");
     
     let code = `insert ignore - 
 insert replace - 
 update - 
-delete - `
+delete - `;
     output(code, "daoDefaultFunctions");
 }
 
@@ -101,8 +105,8 @@ function roomDatabaseCode() {
     
     let daoDefault = getRows("daoDefaultFunctions").noSpaceSplit("-").filter(v => v.length == 2 && ["insertignore", "insertreplace", "update", "delete"].includes(v[0]));
     
-    let daoCustom = getRows("daoCustomFunctions").split("|").filter(v => [3, 4].includes(v.length)).map(v => [noSpace(v[0]),
-        noSpace(v[1]),
+    let daoCustom = getRows("daoCustomFunctions").split("|").filter(v => [3, 4].includes(v.length)).map(v => [v[0].noSpace(),
+        v[1].noSpace(),
         v[2].trim(),
         v.length == 4 ? trimSplit(v[3]) : [],
         (v[2].match(/:\w+/g) || []).map(w => w.substring(1))]);
@@ -176,7 +180,7 @@ import androidx.room.*
 import ${packageName}${tableFolder}.${table}
 
 @Dao
-interface MoodsDao{`
+interface ${dao}{`
 
     for (let i of daoDefault) {
         switch (i[0]) {

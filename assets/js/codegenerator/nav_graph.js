@@ -1,7 +1,7 @@
 function navGraphDisplay() {
     displayArea().innerHTML = "Package Name"
     + textArea(1, "packageName")
-    + "for each fragment list:<br/>multiple fragment classes on separate lines<br>for multiple fragments using same class, enter \"className: fragment0, fragment1, fragment2 ...\"<br/>enter just the name if you want the className and fragmentName to be the same<br/><br/>Fragments In Action Bar<br/>if you want the fragments to have an icon instead of being in the overflow menu, put a space after the fragment name and enter the icon name<br/>for example \"className: fragment0 icon0, fragment1, fragment2 icon2 ...\"<br/>use \"*\" as the icon name to match the fragment name"
+    + "for each fragment list:<br/>multiple fragment classes on separate lines<br>for multiple fragments using same class, enter \"className: fragment0, fragment1, fragment2 ...\"<br/>enter just the name if you want the className and fragmentName to be the same<br/><br/>Fragments In Action Bar<br/>if you want the fragments to have an icon instead of being in the overflow menu, put a space after the fragment name and enter the icon name<br/>for example \"className: fragment0 icon0, fragment1, fragment2 icon2 ...\"<br/>use \"*\" as the icon name to match the fragment name<br/>do not include the word \"fragment\" in the name, as it will be added"
     + textArea(5, "actionBarList")
     + "Fragments In Tabs<br/>"
     + `tabs placement (checked = top, unchecked = bottom) ${checkBox("tabsTop")}`
@@ -51,18 +51,18 @@ import ${packageName.split(".", 3).join(".")}.R` : "";
     let actionBarList = getRows("actionBarList").split(":")
         .filter(v => [1, 2].includes(v.length))
         .map(v => v.length == 1
-        ? [v[0].toText(), [v[0].toUnderscore()], BAR]
-        : [v[0].toText(), v[1].split(",").trim().map(w => w.toUnderscore()), BAR]);
+        ? [v[0], [v[0]], BAR]
+        : [v[0], v[1].split(",").trim(), BAR]);
     let tabList = getRows("tabList").split(":")
         .filter(v => [1, 2].includes(v.length))
         .map(v => v.length == 1
-        ? [v[0].toText(), [v[0].toUnderscore()], TAB]
-        : [v[0].toText(), v[1].split(",").trim().map(w => w.toUnderscore()), TAB]);
+        ? [v[0], [v[0]], TAB]
+        : [v[0], v[1].split(",").trim(), TAB]);
     let otherList = getRows("otherList").split(":")
         .filter(v => [1, 2].includes(v.length))
         .map(v => v.length == 1
-        ? [v[0].toText(), [v[0].toUnderscore()], OTHER]
-        : [v[0].toText(), v[1].split(",").trim().map(w => w.toUnderscore()), OTHER]);
+        ? [v[0], [v[0]], OTHER]
+        : [v[0], v[1].split(",").trim(), OTHER]);
     let drawerList = getRows("drawerList").map(v => {
         if (v[0] == "*") {
             return ["*", v.substring(1).replace(/:/g, "")];
@@ -77,7 +77,7 @@ import ${packageName.split(".", 3).join(".")}.R` : "";
         .map(v =>
         [v[0].toUnderscore(),
         {destination:v[1].toUnderscore(),
-        name:(v.length >= 3 ? v[2].toUnderscore() : `action_${v[0].toUnderscore()}_to_${v[1].toUnderscore()}`),
+        name:(v.length >= 3 && v[2] !== "" ? v[2].toUnderscore() : `action_${v[0].toUnderscore()}_to_${v[1].toUnderscore()}`),
         anim:(v.length == 4 ? v[3].toUnderscore() : "")}]);
     let argumentList = getRows("argumentList").split(",")
         .filter(v => v.length == 4)
@@ -95,11 +95,11 @@ import ${packageName.split(".", 3).join(".")}.R` : "";
             args = argumentList.filter(v => v[0].matches(i[1][0].split(" ")[0].replace(/\*/g, ""))).map(v => v[1]);
             dests = destinationList.filter(v => v[0].matches(i[1][0].split(" ")[0].replace(/\*/g, ""))).map(v => v[1]);
             fragmentList.push({id:i[1][0].split(" ")[0].replace(/\*/g, ""),
-                name:i[0].replace(/\*/g, "").split(" ")[0],
+                name:i[0].replace(/\*/g, "").split(" ")[0].toText(),
                 type:i[2],
                 args:args,
                 dests:dests,
-                icon:(i[1][0].includes("*") ? i[1][0].replace(/\*/g, "").trim() : i[1][0].includes(" ") ? i[1][0].substring(i[1][0].indexOf(" ")) : "")});
+                icon:(i[1][0].includes("*") ? i[1][0].replace(/\*/g, "").trim() : i[1][0].includes(" ") ? i[1][0].substring(i[1][0].indexOf(" ")) : "").toUnderscore()});
             fragmentClassList.pushArrayUnique([i[0].replace(/\*/g, "").split(" ")[0].toCapCamel(), args], 0);
         } else {
             for (let j=0; j<i[1].length; j++) {
@@ -107,11 +107,11 @@ import ${packageName.split(".", 3).join(".")}.R` : "";
                 args.push({name:"frag", type:"integer", value:j});
                 dests = destinationList.filter(v => v[0].matches(i[1][0].split(" ")[0].replace(/\*/g, ""))).map(v => v[1]);
                 fragmentList.push({id:i[1][j].split(" ")[0].replace(/\*/g, ""),
-                    name:i[0],
+                    name:i[0].toText(),
                     type:i[2],
                     args:args,
                     dests:dests,
-                    icon:(i[1][0].includes("*") ? i[1][0].replace(/\*/g, "").trim() : i[1][0].includes(" ") ? i[1][0].substring(i[1][0].indexOf(" ")) : "")});
+                    icon:(i[1][j].includes("*") ? i[1][j].replace(/\*/g, "").trim() : i[1][j].includes(" ") ? i[1][j].substring(i[1][j].indexOf(" ")) : "").toUnderscore()});
                 fragmentClassList.pushArrayUnique([i[0].toCapCamel(), args], 0);
             }
         }
@@ -131,9 +131,9 @@ import ${packageName.split(".", 3).join(".")}.R` : "";
     for (let i of fragmentList) {
         code += `
     <fragment android:id="@+id/${i.id.toUnderscore()}"
-              android:name="${packageName}.${i.name.toCapCamel()}"
+              android:name="${packageName}.${i.name.toCapCamel()}Fragment"
               android:label="${strings ? `@string/${i.id.toUnderscore()}` : i.id.toText()}"
-              tools:layout="@layout/${i.name.toUnderscore()}">`;
+              tools:layout="@layout/${i.name.toUnderscore()}_fragment">`;
         for (let j of i.dests) {
             code += `
         <action android:id="@+id/${j.name}"
@@ -419,7 +419,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment${R_import}
 
-class ${name}: Fragment() {
+class ${name}Fragment: Fragment() {
 `;
     for (let i of args) {
         fragCode += `    var ${i.name}: ${fromArgHotKey(i.type)} = ${emptyValue(i.type)}
@@ -442,7 +442,7 @@ class ${name}: Fragment() {
     }
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.${name.toUnderscore()}, container, false)
+        return inflater.inflate(R.layout.${name.toUnderscore()}_fragment, container, false)
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
