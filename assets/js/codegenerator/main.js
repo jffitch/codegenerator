@@ -4,7 +4,7 @@ function generatorLoadFunction() {
 
 // add tasks to list
 function setUpSelectBoxes() {
-    let tasks = ["Nav Graph", "Navigate With Bundle", "Checklist", "Room Database", "Instructions Page", "Layout Constraints", "Shared Preferences", "String Translation", "Parse Strings File", "Convert To @string", "Convert To @style", "Game Maker IAP", "API Call", "Radio Group", "RecyclerView Adapter", "Spinner Adapter", "findViewById", "Firebase", "Custom Tab Layout", "Constants File", "Repeated Layout", "ViewModel Test Utility", "Unit Test", "Test Resources", "Hardcoded Strings", "HTML Lists", "HTML Tables", "HTML Forms"];
+    let tasks = ["Nav Graph", "Navigate With Bundle", "Checklist", "Room Database", "Instructions Page", "Layout Constraints", "Shared Preferences", "String Translation", "Parse Strings File", "Convert To @string", "Convert To @style", "Game Maker IAP", "API Call", "Radio Group", "RecyclerView Adapter", "Spinner Adapter", "findViewById", "Firebase", "Custom Tab Layout", "Constants File", "Repeated Layout", "ViewModel Test Utility", "Unit Test", "Test Resources", "Hardcoded Strings", "HTML Lists", "HTML Tables", "HTML Forms", "HTML NavBar"];
     tasks.sort();
     tasks.unshift("select");
     for (let i of tasks) {
@@ -45,6 +45,7 @@ function taskChanged() {
         case "HTML Lists": htmlListsDisplay(); break;
         case "HTML Tables": htmlTablesDisplay(); break;
         case "HTML Forms": htmlFormsDisplay(); break;
+        case "HTML NavBar": htmlNavbarDisplay(); break;
         case "***": parkerSquareDisplay(); break;    }
 }
 
