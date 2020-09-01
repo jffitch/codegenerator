@@ -77,7 +77,7 @@ import ${packageName.split(".", 3).join(".")}.R` : "";
         .map(v =>
         [v[0].toUnderscore(),
         {destination:v[1].toUnderscore(),
-        name:(v.length >= 3 && v[2] !== "" ? v[2].toUnderscore() : `action_${v[0].toUnderscore()}_to_${v[1].toUnderscore()}`),
+        name:(v.length >= 3 && v[2] !== "" ? v[2].toUnderscore() : `action_${v[0]}_to_${v[1]}`.toUnderscore()),
         anim:(v.length == 4 ? v[3].toUnderscore() : "")}]);
     let argumentList = getRows("argumentList").split(",")
         .filter(v => v.length == 4)
@@ -128,6 +128,17 @@ import ${packageName.split(".", 3).join(".")}.R` : "";
             xmlns:tools="http://schemas.android.com/tools"
             android:id="@+id/nav_graph"
             app:startDestination="@id/${(fragmentList[0] || {id:""}).id}">`;
+    for (let j of destinationList.filter(v => v[0] === "").map(v => v[1])) {
+        code += `
+    <action android:id="@+id/${j.name}"
+            app:destination="@id/${j.destination}"`;
+        if (["left", "right", "up", "down"].includes(j.anim)) {
+                code += `
+            app:enterAnim="@anim/push_${j.anim}_in"
+            app:exitAnim="@anim/push_${j.anim}_out"`;
+        }
+        code += " />";
+    }
     for (let i of fragmentList) {
         code += `
     <fragment android:id="@+id/${i.id.toUnderscore()}"
